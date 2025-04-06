@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signup Page</title>
+  </head>
+  <style>
+    /* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #fafafa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Signup container styling */
+.signup-container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 1400px;
+    text-align: center;
+}
+
+.signup-container h1 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.signup-container h2 {
+    color: #555;
+    font-size: 20px;
+    margin-bottom: 20px;
+}
+
+/* Form styling */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Label styling */
+label {
+    text-align: left;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+    margin-bottom: 5px;
+}
+
+/* Input and select styling */
+input, select {
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+}
+
+input:focus, select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Button styling */
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Responsive layout for person details */
+.person-deatil {
+    display: flex;
+    gap: 15px; /* Space between the items */
+    justify-content: space-between;
+    align-items: flex-start; /* Align items at the top */
+}
+
+.person-deatil label {
+    flex: 1 1 20%; 
+    margin-bottom: 5px;
+    gap: 10px; 
+    display: flex; 
+}
+
+.person-deatil input, .person-deatil select {
+    flex: 1 1 calc(50% - 10px); /* Two inputs per row */
+    min-width: 200px;
+    box-sizing: border-box;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .person-deatil input, .person-deatil select {
+        flex: 1 1 100%; /* Full width on smaller screens */
+    }
+}
+  </style>
+  <body>
+    <form id="signupForm" method="post">
+       
+   
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Enter Email" required />
+    
+    
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter Username" required />
+    
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter Password" required />
+    
+        <button type="submit">Signup</button>
+    </form>
+    </div>
+<script>
+// FrontEnd/Script/signup.js
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = {
+        
+        email: document.getElementById('email').value,
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+      };
+
+      try {
+        const res = await fetch('http://localhost:8080/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Signup successful!');
+          window.location.href = './login.html';
+        } else {
+          alert(data.error || 'Signup failed');
+        }
+      } catch (err) {
+        console.error("Signup error:", err);
+        alert("An error occurred.");
+      }
+    });
+  });
+
+</script>
+    <script src="../Script/signup.js"></script>
+  </body>
+</html>
+

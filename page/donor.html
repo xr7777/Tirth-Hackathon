@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donor & Requester Connection</title>
+    <style>
+        :root {
+            --primary: #e91e63;
+            --primary-dark: #c2185b;
+            --primary-light: #f8bbd0;
+            --danger: #e53935;
+            --success: #43a047;
+            --gray-light: #f5f5f5;
+            --gray: #9e9e9e;
+            --gray-dark: #424242;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--gray-light);
+            color: var(--gray-dark);
+            line-height: 1.6;
+        }
+
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        header h1 {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+        }
+
+        .toggle-group {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .toggle-switch {
+            display: flex;
+            background: var(--gray-light);
+            border-radius: 30px;
+            padding: 5px;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-option {
+            padding: 10px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-option.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .col {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--gray-dark);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--gray);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+
+        .filter-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feed {
+            margin-top: 2rem;
+        }
+
+        .feed h2 {
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+
+        .post {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--primary);
+        }
+
+        .post:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .post-title {
+            font-weight: bold;
+            color: var(--primary-dark);
+            font-size: 1.1rem;
+        }
+
+        .post-type {
+            font-size: 0.85rem;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+        
+        .post-type.requester {
+            background: #ffebee;
+            color: var(--danger);
+        }
+        
+        .post-type.donor {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .post-details {
+            margin: 1rem 0;
+        }
+
+        .post-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+
+        .post-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .post-meta-item.blood-group {
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .location-container {
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .location-info {
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+        }
+
+        .btn-small {
+            padding: 0.3rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
+        .empty-feed {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            color: var(--gray);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--success);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast-error {
+            background: var(--danger);
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 1rem;
+                margin: 1rem;
+            }
+            
+            .row {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Blood Donor & Requester Connection</h1>
+        <p>Connect blood donors with those in need - save lives today</p>
+    </header>
+
+    <div class="container">
+        <div class="toggle-group">
+            <div class="toggle-switch">
+                <div class="toggle-option active" data-type="donor">I am a Donor</div>
+                <div class="toggle-option" data-type="requester">I need Blood</div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="connection-form">
+                <input type="hidden" id="form-type" value="donor">
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Full Name *</label>
+                            <input type="text" id="name" placeholder="Enter your full name" required>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="contact">Contact Number *</label>
+                            <input type="tel" id="contact" placeholder="Enter your contact number" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="bloodGroup">Blood Group *</label>
+                            <select id="bloodGroup" required>
+                                <option value="">--Select Blood Group--</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" placeholder="Enter your city/area" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="location-container">
+                    <button type="button" id="getLocation" class="btn btn-secondary btn-small">
+                        Use My Current Location
+                    </button>
+                    <span class="location-info" id="locationStatus"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="details">Additional Details *</label>
+                    <textarea id="details" rows="4" placeholder="Provide any additional information or specific requirements" required></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="reset" class="btn btn-secondary">Reset</button>
+                    <button type="submit" class="btn">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="filter-container">
+            <h3>Filter Results</h3>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label for="typeFilter">Type:</label>
+                    <select id="typeFilter">
+                        <option value="">All</option>
+                        <option value="donor">Donors</option>
+                        <option value="requester">Requesters</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="bloodGroupFilter">Blood Group:</label>
+                    <select id="bloodGroupFilter">
+                        <option value="">All Blood Groups</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label for="locationFilter">Location:</label>
+                    <input type="text" id="locationFilter" placeholder="Filter by location">
+                </div>
+                <button id="filterButton" class="btn">Apply Filters</button>
+            </div>
+        </div>
+
+        <div class="feed" id="feed">
+            <h2>Available Donors & Requests</h2>
+            <div id="feed-list">
+                <!-- Feed content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <span id="toast-message"></span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const formTypeInput = document.getElementById('form-type');
+            const toggleOptions = document.querySelectorAll('.toggle-option');
+            const form = document.getElementById('connection-form');
+            const feedList = document.getElementById('feed-list');
+            const getLocationBtn = document.getElementById('getLocation');
+            const locationStatus = document.getElementById('locationStatus');
+            const locationInput = document.getElementById('location');
+            const filterButton = document.getElementById('filterButton');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Initialize feed data from localStorage or empty array
+            let feedData = [];
+            let userCoords = null;
+            
+            // Load data from localStorage
+            loadFromLocalStorage();
+
+            // Toggle between donor and requester forms
+            toggleOptions.forEach(option => {
+                option.addEventListener('click', function () {
+                    toggleOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    formTypeInput.value = this.getAttribute('data-type');
+                });
+            });
+
+            // Handle form submission
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                const timestamp = new Date();
+                const entryId = 'entry_' + Date.now(); // Create unique ID
+                
+                const newEntry = {
+                    id: entryId,
+                    type: formTypeInput.value,
+                    name: document.getElementById('name').value,
+                    contact: document.getElementById('contact').value,
+                    bloodGroup: document.getElementById('bloodGroup').value,
+                    location: document.getElementById('location').value,
+                    details: document.getElementById('details').value,
+                    coords: userCoords,
+                    timestamp: timestamp.toISOString(),
+                    displayTime: formatDate(timestamp)
+                };
+
+                // Add to feed and save to localStorage
+                feedData.unshift(newEntry);
+                saveToLocalStorage();
+                renderFeed();
+                
+                // Reset form and status
+                form.reset();
+                locationStatus.textContent = '';
+                userCoords = null;
+                
+                // Show success message
+                showToast(`Your ${newEntry.type === 'donor' ? 'donation offer' : 'blood request'} has been posted successfully!`);
+            });
+
+            // Get user's geolocation
+            getLocationBtn.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    locationStatus.textContent = "Detecting your location...";
+                    
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            userCoords = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            
+                            // Attempt to get readable location from coordinates
+                            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userCoords.lat}&lon=${userCoords.lng}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    const address = data.address;
+                                    let locationString = '';
+                                    
+                                    if (address.city || address.town) {
+                                        locationString = address.city || address.town;
+                                        if (address.suburb) locationString += `, ${address.suburb}`;
+                                    } else if (address.suburb) {
+                                        locationString = address.suburb;
+                                    }
+                                    
+                                    if (locationString) {
+                                        locationInput.value = locationString;
+                                        locationStatus.textContent = "Location detected successfully!";
+                                        locationStatus.style.color = "var(--success)";
+                                    } else {
+                                        locationInput.value = `${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`;
+                                        locationStatus.textContent = "Coordinates detected. Please enter a readable location name.";
+                                    }
+                                })
+                                .catch(error => {
+                                    locationInput.value = `${userCoords.lat.toFixed(4)}, ${userCoords.lng.toFixed(4)}`;
+                                    locationStatus.textContent = "Coordinates detected. Please enter a readable location name.";
+                                });
+                        },
+                        function(error) {
+                            switch(error.code) {
+                                case error.PERMISSION_DENIED:
+                                    locationStatus.textContent = "Location access denied. Please enter manually.";
+                                    break;
+                                case error.POSITION_UNAVAILABLE:
+                                    locationStatus.textContent = "Location information unavailable. Please enter manually.";
+                                    break;
+                                case error.TIMEOUT:
+                                    locationStatus.textContent = "Location request timed out. Please enter manually.";
+                                    break;
+                                default:
+                                    locationStatus.textContent = "An unknown error occurred. Please enter manually.";
+                                    break;
+                            }
+                            locationStatus.style.color = "var(--danger)";
+                        }
+                    );
+                } else {
+                    locationStatus.textContent = "Geolocation is not supported by this browser. Please enter manually.";
+                    locationStatus.style.color = "var(--danger)";
+                }
+            });
+
+            // Apply filters
+            filterButton.addEventListener('click', function() {
+                renderFeed();
+                showToast("Filters applied successfully!");
+            });
+
+            // Delete entry from feed
+            function deleteEntry(entryId) {
+                feedData = feedData.filter(entry => entry.id !== entryId);
+                saveToLocalStorage();
+                renderFeed();
+                showToast("Entry deleted successfully!", false);
+            }
+
+            // Format date for display
+            function formatDate(date) {
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.round(diffMs / 60000);
+                const diffHours = Math.round(diffMins / 60);
+                const diffDays = Math.round(diffHours / 24);
+
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+                if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+                if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('en-US', options);
+            }
+
+            // Update display times of all entries
+            function updateDisplayTimes() {
+                feedData = feedData.map(entry => {
+                    const timestamp = new Date(entry.timestamp);
+                    return {
+                        ...entry,
+                        displayTime: formatDate(timestamp)
+                    };
+                });
+                
+                saveToLocalStorage();
+            }
+
+            // Save data to localStorage
+            function saveToLocalStorage() {
+                try {
+                    localStorage.setItem('bloodConnectData', JSON.stringify(feedData));
+                } catch (e) {
+                    showToast("Could not save data to local storage. Storage might be full.", true);
+                    console.error("LocalStorage error:", e);
+                }
+            }
+
+            // Load data from localStorage
+            function loadFromLocalStorage() {
+                try {
+                    const storedData = localStorage.getItem('bloodConnectData');
+                    if (storedData) {
+                        feedData = JSON.parse(storedData);
+                        // Update display times for all entries
+                        updateDisplayTimes();
+                        renderFeed();
+                    } else {
+                        feedData = [];
+                        renderFeed();
+                    }
+                } catch (e) {
+                    console.error("Error loading from localStorage:", e);
+                    feedData = [];
+                    renderFeed();
+                }
+            }
+
+            // Display toast message
+            function showToast(message, isError = false) {
+                toastMessage.textContent = message;
+                toast.className = isError ? 'toast toast-error show' : 'toast show';
+                
+                setTimeout(() => {
+                    toast.className = 'toast';
+                }, 3000);
+            }
+
+            // Render the feed with filtering
+            function renderFeed() {
+                const typeFilter = document.getElementById('typeFilter').value;
+                const bloodGroupFilter = document.getElementById('bloodGroupFilter').value;
+                const locationFilter = document.getElementById('locationFilter').value.toLowerCase();
+
+                const filteredData = feedData.filter(entry => {
+                    if (typeFilter && entry.type !== typeFilter) return false;
+                    if (bloodGroupFilter && entry.bloodGroup !== bloodGroupFilter) return false;
+                    if (locationFilter && !entry.location.toLowerCase().includes(locationFilter)) return false;
+                    return true;
+                });
+
+                if (filteredData.length === 0) {
+                    feedList.innerHTML = '<div class="empty-feed">No matching entries found. Adjust filters or add new entries.</div>';
+                    return;
+                }
+
+                feedList.innerHTML = filteredData.map(entry => `
+                    <div class="post" data-id="${entry.id}">
+                        <div class="post-header">
+                            <div class="post-title">${entry.name}</div>
+                            <div class="post-type ${entry.type}">${entry.type === 'donor' ? 'DONOR' : 'REQUESTER'}</div>
+                        </div>
+                        <div class="post-meta">
+                            <div class="post-meta-item blood-group">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L8 6H16L12 2Z" />
+                                    <path d="M12 22C14.2091 22 16 20.2091 16 18C16 15.7909 14.2091 14 12 14C9.79086 14 8 15.7909 8 18C8 20.2091 9.79086 22 12 22Z" />
+                                    <path d="M8 6V14" />
+                                    <path d="M16 6V14" />
+                                </svg>
+                                ${entry.bloodGroup}
+                            </div>
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                ${entry.location}
+                            </div>
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M12 6v6l4 2" />
+                                </svg>
+                                ${entry.displayTime}
+                            </div>
+                        </div>
+                        <div class="post-details">
+                            <p>${entry.details}</p>
+                        </div>
+                        <div class="post-meta">
+                            <div class="post-meta-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z" />
+                                </svg>
+                                <a href="tel:${entry.contact}" class="post-contact">${entry.contact}</a>
+                            </div>
+                            <button class="btn btn-secondary btn-small delete-entry" data-id="${entry.id}">Delete</button>
+                        </div>
+                    </div>
+                `).join('');
+
+                // Add event listeners to delete buttons after rendering
+                document.querySelectorAll('.delete-entry').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const entryId = this.getAttribute('data-id');
+                        deleteEntry(entryId);
+                    });
+                });
+            }
+
+            // Update display times periodically (every minute)
+            setInterval(() => {
+                updateDisplayTimes();
+                renderFeed();
+            }, 60000);
+
+            // Initialize feed
+            renderFeed();
+        });
+    </script>
+</body>
+</html>

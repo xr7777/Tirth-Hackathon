@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found Pets</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        :root {
+            --primary: #1e88e5;
+            --primary-dark: #1565c0;
+            --danger: #e53935;
+            --success: #43a047;
+            --warning: #ffb300;
+            --gray-light: #f5f5f5;
+            --gray: #9e9e9e;
+            --gray-dark: #424242;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-dark);
+            background: var(--gray-light);
+        }
+
+        header {
+            background: #fff;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            background: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.3s;
+        }
+
+        .tab:hover {
+            background: var(--gray-light);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+
+        .card-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--gray-light);
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .card-body {
+            padding: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--gray-dark);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid var(--gray);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .toggle-group {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-switch {
+            display: flex;
+            background: var(--gray-light);
+            border-radius: 25px;
+            padding: 4px;
+            margin: 1rem 0;
+        }
+
+        .toggle-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .toggle-option.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .post {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .post-image {
+            height: 200px;
+            overflow: hidden;
+        }
+
+        .post-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .post-content {
+            padding: 1rem;
+        }
+
+        .post-title {
+            font-size: 1.25rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        #map {
+            height: 300px;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: bold;
+        }
+
+        .badge-lost {
+            background: var(--danger);
+            color: white;
+        }
+
+        .badge-found {
+            background: var(--success);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lost & Found Pets</h1>
+        <p>Help reunite lost pets with their families</p>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="reports">View Reports</div>
+            <div class="tab" data-tab="create">Create Report</div>
+        </div>
+        
+        <div class="tab-content" id="reports-tab">
+            <div id="reports-list"></div>
+        </div>
+        
+        <div class="tab-content" id="create-tab" style="display: none;">
+            <div class="card">
+                <div class="card-header">Report Lost/Found Pet</div>
+                <div class="card-body">
+                    <div class="toggle-group">
+                        <div class="toggle-switch">
+                            <div class="toggle-option active" data-type="lost">Lost Pet</div>
+                            <div class="toggle-option" data-type="found">Found Pet</div>
+                        </div>
+                    </div>
+                    
+                    <form id="report-form">
+                        <input type="hidden" id="report-type" value="lost">
+                        <input type="hidden" id="latitude">
+                        <input type="hidden" id="longitude">
+                        
+                        <div class="form-group">
+                            <label for="title">Title *</label>
+                            <input type="text" id="title" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="animal-type">Pet Type *</label>
+                            <select id="animal-type" required>
+                                <option value="">Select type</option>
+                                <option value="dog">Dog</option>
+                                <option value="cat">Cat</option>
+                                <option value="bird">Bird</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="description">Description *</label>
+                            <textarea id="description" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="date">Date Lost/Found *</label>
+                            <input type="date" id="date" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <div id="map"></div>
+                            <button type="button" id="use-my-location" class="btn btn-primary">Use My Location</button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="address">Address</label>
+                            <input type="text" id="address">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contact">Contact Information *</label>
+                            <input type="text" id="contact" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="photo">Photo</label>
+                            <input type="file" id="photo" accept="image/*">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let map;
+            let marker;
+            let reportsList = [];
+            
+            function initMap() {
+                map = L.map('map').setView([51.505, -0.09], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+                
+                map.on('click', function(e) {
+                    setMarker(e.latlng.lat, e.latlng.lng);
+                });
+            }
+            
+            function setMarker(lat, lng) {
+                if (marker) {
+                    map.removeLayer(marker);
+                }
+                marker = L.marker([lat, lng]).addTo(map);
+                document.getElementById('latitude').value = lat;
+                document.getElementById('longitude').value = lng;
+            }
+            
+            function initTabs() {
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const tabId = this.getAttribute('data-tab');
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.style.display = 'none';
+                        });
+                        document.getElementById(tabId + '-tab').style.display = 'block';
+                        
+                        if (tabId === 'create') {
+                            map.invalidateSize();
+                        }
+                    });
+                });
+            }
+            
+            document.querySelectorAll('.toggle-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.toggle-option').forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('report-type').value = this.getAttribute('data-type');
+                });
+            });
+            
+            function initLocationButton() {
+                document.getElementById('use-my-location').addEventListener('click', function() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            map.setView([lat, lng], 15);
+                            setMarker(lat, lng);
+                        });
+                    }
+                });
+            }
+            
+            function initForm() {
+                document.getElementById('report-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const photoInput = document.getElementById('photo');
+                    if (photoInput.files && photoInput.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            submitReport(e.target.result);
+                        };
+                        reader.readAsDataURL(photoInput.files[0]);
+                    } else {
+                        submitReport(null);
+                    }
+                });
+            }
+            
+            function submitReport(photoData) {
+                const report = {
+                    id: Date.now().toString(),
+                    type: document.getElementById('report-type').value,
+                    title: document.getElementById('title').value,
+                    animalType: document.getElementById('animal-type').value,
+                    description: document.getElementById('description').value,
+                    date: document.getElementById('date').value,
+                    latitude: document.getElementById('latitude').value,
+                    longitude: document.getElementById('longitude').value,
+                    address: document.getElementById('address').value,
+                    contact: document.getElementById('contact').value,
+                    photo: photoData,
+                    status: 'active',
+                    createdAt: new Date().toISOString()
+                };
+                
+                reportsList.unshift(report);
+                saveReports();
+                renderReports();
+                document.getElementById('report-form').reset();
+                document.querySelector('.tab[data-tab="reports"]').click();
+            }
+            
+            function saveReports() {
+                localStorage.setItem('lostFoundReports', JSON.stringify(reportsList));
+            }
+            
+            function loadReports() {
+                const saved = localStorage.getItem('lostFoundReports');
+                if (saved) {
+                    try {
+                        reportsList = JSON.parse(saved);
+                    } catch (e) {
+                        reportsList = [];
+                    }
+                }
+                renderReports();
+            }
+            
+            function renderReports() {
+                const container = document.getElementById('reports-list');
+                
+                if (reportsList.length === 0) {
+                    container.innerHTML = `
+                        <div class="card">
+                            <div class="card-body" style="text-align: center;">
+                                <h3>No reports yet</h3>
+                                <p>Be the first to create a lost or found pet report</p>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                container.innerHTML = reportsList.map(report => `
+                    <div class="post">
+                        ${report.photo ? `
+                            <div class="post-image">
+                                <img src="${report.photo}" alt="Pet photo">
+                            </div>
+                        ` : ''}
+                        <div class="post-content">
+                            <h3 class="post-title">
+                                ${report.title}
+                                <span class="badge badge-${report.type}">${report.type.toUpperCase()}</span>
+                            </h3>
+                            <div>Type: ${report.animalType}</div>
+                            <div>Date: ${new Date(report.date).toLocaleDateString()}</div>
+                            <div>Location: ${report.address || 'Location marked on map'}</div>
+                            <p>${report.description}</p>
+                            <div><strong>Contact:</strong> ${report.contact}</div>
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-primary view-on-map" 
+                                    data-lat="${report.latitude}" 
+                                    data-lng="${report.longitude}">View on Map</button>
+                                <button class="btn btn-danger delete-report" 
+                                    data-id="${report.id}">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Add event listeners
+                document.querySelectorAll('.view-on-map').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const lat = this.getAttribute('data-lat');
+                        const lng = this.getAttribute('data-lng');
+                        document.querySelector('.tab[data-tab="create"]').click();
+                        map.setView([lat, lng], 15);
+                        setMarker(lat, lng);
+                    });
+                });
+                
+                document.querySelectorAll('.delete-report').forEach(button => {
+                    button.addEventListener('click', function() {
+                        if (confirm('Are you sure you want to delete this report?')) {
+                            deleteReport(this.getAttribute('data-id'));
+                        }
+                    });
+                });
+            }
+            
+            function deleteReport(id) {
+                reportsList = reportsList.filter(report => report.id !== id);
+                saveReports();
+                renderReports();
+            }
+            
+            // Initialize everything
+            initTabs();
+            initMap();
+            initLocationButton();
+            initForm();
+            loadReports();
+        });
+    </script>
+</body>
+</html>
